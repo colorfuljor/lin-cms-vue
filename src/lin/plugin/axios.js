@@ -122,11 +122,12 @@ _axios.interceptors.request.use(
 // Add a response interceptor
 _axios.interceptors.response.use(
   async res => {
-    let { code, message } = res.data // eslint-disable-line
-    if (res.status.toString().charAt(0) === '2') {
+    if (res.status.toString().charAt(0) === '2' && res.data.ok === true) {
       return res.data
     }
+
     return new Promise(async (resolve, reject) => {
+      let { msg, code } = res.data // eslint-disable-line
       const { url } = res.config
 
       // refreshToken相关，直接登出
@@ -160,14 +161,14 @@ _axios.interceptors.response.use(
         const errorArr = Object.entries(ErrorCode).filter(v => v[0] === code.toString())
         // 匹配到前端自定义的错误码
         if (errorArr.length > 0 && errorArr[0][1] !== '') {
-          message = errorArr[0][1] // eslint-disable-line
+          msg = errorArr[0][1] // eslint-disable-line
         } else {
-          message = ErrorCode['777']
+          msg = ErrorCode['777']
         }
       }
 
       Vue.prototype.$message({
-        message,
+        message: msg,
         type: 'error',
       })
       reject()
