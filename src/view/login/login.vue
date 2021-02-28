@@ -55,9 +55,8 @@ export default {
     async getInformation() {
       try {
         // 尝试获取当前用户信息
-        const user = await User.getPermissions()
+        const user = await User.getInformation()
         this.setUserAndState(user)
-        this.setUserPermissions(user.permissions)
       } catch (e) {
         console.log(e)
       }
