@@ -98,7 +98,7 @@ _axios.interceptors.request.use(
       console.warn(`其他请求类型: ${reqConfig.method}, 暂无自动处理`)
     }
     // step2: permission 处理
-    if (reqConfig.url === 'cms/user/refresh') {
+    if (reqConfig.url === 'user/refresh') {
       const refreshToken = getToken('refresh_token')
       if (refreshToken) {
         // eslint-disable-next-line no-param-reassign
@@ -122,9 +122,9 @@ _axios.interceptors.request.use(
 // Add a response interceptor
 _axios.interceptors.response.use(
   async res => {
-    let { code, message } = res.data // eslint-disable-line
+    let { code, msg, data } = res.data // eslint-disable-line
     if (res.status.toString().charAt(0) === '2') {
-      return res.data
+      return data
     }
     return new Promise(async (resolve, reject) => {
       const { url } = res.config
@@ -143,7 +143,7 @@ _axios.interceptors.response.use(
         const cache = {}
         if (cache.url !== url) {
           cache.url = url
-          const refreshResult = await _axios('cms/user/refresh')
+          const refreshResult = await _axios('user/refresh')
           saveAccessToken(refreshResult.access_token)
           // 将上次失败请求重发
           const result = await _axios(res.config)
@@ -160,14 +160,14 @@ _axios.interceptors.response.use(
         const errorArr = Object.entries(ErrorCode).filter(v => v[0] === code.toString())
         // 匹配到前端自定义的错误码
         if (errorArr.length > 0 && errorArr[0][1] !== '') {
-          message = errorArr[0][1] // eslint-disable-line
+          msg = errorArr[0][1] // eslint-disable-line
         } else {
-          message = ErrorCode['777']
+          msg = ErrorCode['777']
         }
       }
 
-      Vue.prototype.$message({
-        message,
+      Vue.prototype.$msg({
+        msg,
         type: 'error',
       })
       reject()
