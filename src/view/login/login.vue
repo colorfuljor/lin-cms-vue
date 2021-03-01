@@ -32,7 +32,7 @@ export default {
       wait: 2000, // 2000ms之内不能重复发起请求
       throttleLogin: null, // 节流登录
       form: {
-        username: 'root',
+        username: 'admin',
         password: '123456',
       },
     }
@@ -55,9 +55,8 @@ export default {
     async getInformation() {
       try {
         // 尝试获取当前用户信息
-        const user = await User.getPermissions()
+        const user = await User.getInformation()
         this.setUserAndState(user)
-        this.setUserPermissions(user.permissions)
       } catch (e) {
         console.log(e)
       }
