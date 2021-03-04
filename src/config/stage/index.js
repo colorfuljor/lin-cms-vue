@@ -6,13 +6,33 @@ import Utils from '@/lin/util/util'
 // eslint-disable-next-line import/no-mutable-exports
 let homeRouter = [
   {
-    title: '林间有风',
+    title: '首页',
     type: 'view',
-    name: Symbol('about'),
-    route: '/about',
+    name: Symbol('Dashborad'),
+    route: '/home',
     filePath: 'view/about/about.vue',
     inNav: true,
-    icon: 'iconfont icon-iconset0103',
+    icon: 'iconfont icon-home',
+    order: 1,
+  },
+  {
+    title: '数据收集',
+    type: 'view',
+    name: Symbol('Collect'),
+    route: '/collect',
+    filePath: 'view/collect/collect-main.vue',
+    inNav: true,
+    icon: 'iconfont icon-database',
+    order: 1,
+  },
+  {
+    title: '优化分析',
+    type: 'view',
+    name: Symbol('Anlysis'),
+    route: '/anlysis',
+    filePath: 'view/collect/collect-main.vue',
+    inNav: true,
+    icon: 'iconfont icon-weibiaoti--',
     order: 1,
   },
   {
@@ -24,7 +44,6 @@ let homeRouter = [
     inNav: true,
     icon: 'iconfont icon-rizhiguanli',
     order: 2,
-    permission: ['查询所有日志'],
   },
   {
     title: '个人中心',
@@ -75,7 +94,7 @@ filterPlugin(homeRouter)
 homeRouter = homeRouter.concat(plugins)
 
 // 处理顺序
-homeRouter = Utils.sortByOrder(homeRouter)
+// homeRouter = Utils.sortByOrder(homeRouter)
 
 // 使用 Symbol 处理 name 字段, 保证唯一性
 const deepReduceName = target => {

@@ -116,7 +116,7 @@ export default {
         'shake',
         'api',
         'fork',
-        'dashboard',
+        'home',
         'table',
         'android',
         'apple',
