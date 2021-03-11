@@ -1,33 +1,27 @@
 <template>
-  <div style="height:100%;">
-    <el-container>
-      <el-aside :width="sideBarWidth" class="aside" :style="asideStyle">
-        <side-bar :isCollapse="isCollapse" :is-phone="isPhone"></side-bar>
-      </el-aside>
-      <el-container>
-        <el-header class="header">
-          <div class="left">
-            <div class="operate" ref="operate">
-              <i class="iconfont icon-fold" :class="{ rotate: foldState }" @click="changeSlidebarState" />
-              <nav-bar></nav-bar>
-            </div>
-            <el-collapse-transition> <reuse-tab ref="reuse"></reuse-tab> </el-collapse-transition>
-          </div>
-        </el-header>
-        <el-main ref="main">
-          <menu-tab></menu-tab>
-          <app-main ref="appMain"></app-main>
-        </el-main>
-        <back-top :right="50" :bottom="50" :fontSize="34"></back-top>
-      </el-container>
-      <div class="sidenav-mask" :class="{ show: isPhone && isCollapse }" @click="changeSlidebarState"></div>
-    </el-container>
+  <div class="container">
+    <el-row :gutter="20">
+      <el-col :span="16">
+        <div class="grid-content collect-list">
+          <h2 class="grid-title">收集列表</h2>
+          <el-button type="primary">新增</el-button>
+          <el-table :data="tableData" style="width: 100%">
+            <el-table-column prop="date" label="日期" width="180"> </el-table-column>
+            <el-table-column prop="name" label="姓名" width="180"> </el-table-column>
+            <el-table-column prop="address" label="地址"> </el-table-column>
+          </el-table>
+        </div>
+      </el-col>
+      <el-col :span="8"><div class="grid-content collect-progress"></div></el-col>
+    </el-row>
+    <el-row :gutter="20">
+      <el-col :span="18"><div class="grid-content collect-status"></div></el-col>
+      <el-col :span="6"><div class="grid-content collect-progress"></div></el-col>
+    </el-row>
   </div>
 </template>
 
 <script>
-import book from '@/model/book'
-
 export default {
   data() {
     return {
@@ -40,48 +34,40 @@ export default {
       loading: false,
     }
   },
-  methods: {
-    async submitForm(formName) {
-      try {
-        this.loading = true
-        const res = await book.createBook(this.form)
-        this.loading = false
-        if (res.code < window.MAX_SUCCESS_CODE) {
-          this.$message.success(`${res.message}`)
-          this.resetForm(formName)
-        }
-      } catch (error) {
-        this.loading = false
-        this.$message.error('图书添加失败，请检测填写信息')
-        console.log(error)
-      }
-    },
-    // 重置表单
-    resetForm(formName) {
-      this.$refs[formName].resetFields()
-    },
-  },
+  methods: {},
 }
 </script>
 
 <style lang="scss" scoped>
 .container {
-  .title {
-    height: 59px;
-    line-height: 59px;
-    color: $parent-title-color;
-    font-size: 16px;
-    font-weight: 500;
-    text-indent: 40px;
-    border-bottom: 1px solid #dae1ec;
+  padding: 20px;
+  .el-row {
+    margin-bottom: 15px;
+    &:last-child {
+      margin-bottom: 0;
+    }
   }
 
-  .wrap {
+  .collect-list {
+    min-height: 400px;
+
+    .el-table {
+      border: 0;
+    }
+  }
+  .collect-progress {
+    min-height: 400px;
+  }
+  .collect-status {
+    min-height: 400px;
+  }
+  .grid-content {
+    border-radius: 6px;
+    background: white;
     padding: 20px;
   }
-
-  .submit {
-    float: left;
+  .grid-title {
+    font-size: 25px;
   }
 }
 </style>
