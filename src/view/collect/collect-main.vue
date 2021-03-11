@@ -1,38 +1,27 @@
 <template>
-  <div class="container">
-    <div class="title">新建图书</div>
-    <div class="wrap">
-      <el-row>
-        <el-col :lg="16" :md="20" :sm="24" :xs="24">
-          <el-form :model="form" status-icon ref="form" label-width="100px" @submit.native.prevent>
-            <el-form-item label="书名" prop="title">
-              <el-input size="medium" v-model="form.title" placeholder="请填写书名"></el-input>
-            </el-form-item>
-            <el-form-item label="作者" prop="author">
-              <el-input size="medium" v-model="form.author" placeholder="请填写作者"></el-input>
-            </el-form-item>
-            <el-form-item label="封面" prop="image">
-              <el-input size="medium" v-model="form.image" placeholder="请填写封面地址"></el-input>
-            </el-form-item>
-            <el-form-item label="简介" prop="summary">
-              <el-input
-                size="medium"
-                type="textarea"
-                :autosize="{ minRows: 4, maxRows: 8 }"
-                placeholder="请输入简介"
-                v-model="form.summary"
-              >
-              </el-input>
-            </el-form-item>
-
-            <el-form-item class="submit">
-              <el-button type="primary" @click="submitForm('form')" :loading="loading">保 存</el-button>
-              <el-button @click="resetForm('form')">重 置</el-button>
-            </el-form-item>
-          </el-form>
-        </el-col>
-      </el-row>
-    </div>
+  <div style="height:100%;">
+    <el-container>
+      <el-aside :width="sideBarWidth" class="aside" :style="asideStyle">
+        <side-bar :isCollapse="isCollapse" :is-phone="isPhone"></side-bar>
+      </el-aside>
+      <el-container>
+        <el-header class="header">
+          <div class="left">
+            <div class="operate" ref="operate">
+              <i class="iconfont icon-fold" :class="{ rotate: foldState }" @click="changeSlidebarState" />
+              <nav-bar></nav-bar>
+            </div>
+            <el-collapse-transition> <reuse-tab ref="reuse"></reuse-tab> </el-collapse-transition>
+          </div>
+        </el-header>
+        <el-main ref="main">
+          <menu-tab></menu-tab>
+          <app-main ref="appMain"></app-main>
+        </el-main>
+        <back-top :right="50" :bottom="50" :fontSize="34"></back-top>
+      </el-container>
+      <div class="sidenav-mask" :class="{ show: isPhone && isCollapse }" @click="changeSlidebarState"></div>
+    </el-container>
   </div>
 </template>
 
