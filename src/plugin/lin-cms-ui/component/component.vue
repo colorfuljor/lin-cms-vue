@@ -1,7 +1,7 @@
 <template>
   <div>
     <div>组件: LinCmsUitest</div>
-    <div><img :src="logo" alt="logo" /></div>
+    <!-- <div><img :src="logo" alt="logo" /></div> -->
   </div>
 </template>
 
