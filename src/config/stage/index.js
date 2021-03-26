@@ -1,3 +1,4 @@
+import anlysisConfig from './anlysis'
 import Utils from '@/lin/util/util'
 
 // eslint-disable-next-line import/no-mutable-exports
@@ -22,16 +23,7 @@ const homeRouter = [
     icon: 'iconfont icon-database',
     order: 1,
   },
-  {
-    title: '优化分析',
-    type: 'view',
-    name: Symbol('Anlysis'),
-    route: '/anlysis',
-    filePath: 'view/collect/collect-main.vue',
-    inNav: true,
-    icon: 'iconfont icon-weibiaoti--',
-    order: 1,
-  },
+  anlysisConfig,
   // {
   //   title: '日志管理',
   //   type: 'view',
