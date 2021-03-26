@@ -1,10 +1,7 @@
-import adminConfig from './admin'
-import bookConfig from './book' // 引入图书管理路由文件
-import pluginsConfig from './plugin'
 import Utils from '@/lin/util/util'
 
 // eslint-disable-next-line import/no-mutable-exports
-let homeRouter = [
+const homeRouter = [
   {
     title: '首页',
     type: 'view',
@@ -35,16 +32,16 @@ let homeRouter = [
     icon: 'iconfont icon-weibiaoti--',
     order: 1,
   },
-  {
-    title: '日志管理',
-    type: 'view',
-    name: Symbol('log'),
-    route: '/log',
-    filePath: 'view/log/log.vue',
-    inNav: true,
-    icon: 'iconfont icon-rizhiguanli',
-    order: 2,
-  },
+  // {
+  //   title: '日志管理',
+  //   type: 'view',
+  //   name: Symbol('log'),
+  //   route: '/log',
+  //   filePath: 'view/log/log.vue',
+  //   inNav: true,
+  //   icon: 'iconfont icon-rizhiguanli',
+  //   order: 2,
+  // },
   {
     title: '个人中心',
     type: 'view',
@@ -63,35 +60,33 @@ let homeRouter = [
     inNav: false,
     icon: 'iconfont icon-rizhiguanli',
   },
-  bookConfig,
-  adminConfig,
 ]
 
-const plugins = [...pluginsConfig]
+// const plugins = [...pluginsConfig]
 
 // 筛除已经被添加的插件
-function filterPlugin(data) {
-  if (plugins.length === 0) {
-    return
-  }
-  if (Array.isArray(data)) {
-    data.forEach(item => {
-      filterPlugin(item)
-    })
-  } else {
-    const findResult = plugins.findIndex(item => data === item)
-    if (findResult >= 0) {
-      plugins.splice(findResult, 1)
-    }
-    if (data.children) {
-      filterPlugin(data.children)
-    }
-  }
-}
+// function filterPlugin(data) {
+//   if (plugins.length === 0) {
+//     return
+//   }
+//   if (Array.isArray(data)) {
+//     data.forEach(item => {
+//       filterPlugin(item)
+//     })
+//   } else {
+//     const findResult = plugins.findIndex(item => data === item)
+//     if (findResult >= 0) {
+//       plugins.splice(findResult, 1)
+//     }
+//     if (data.children) {
+//       filterPlugin(data.children)
+//     }
+//   }
+// }
 
-filterPlugin(homeRouter)
+// filterPlugin(homeRouter)
 
-homeRouter = homeRouter.concat(plugins)
+// homeRouter = homeRouter.concat(plugins)
 
 // 处理顺序
 // homeRouter = Utils.sortByOrder(homeRouter)
