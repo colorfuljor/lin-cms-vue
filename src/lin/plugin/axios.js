@@ -168,8 +168,8 @@ _axios.interceptors.response.use(
         }
       }
 
-      Vue.prototype.$msg({
-        msg,
+      Vue.prototype.$message({
+        message: msg,
         type: 'error',
       })
       reject()

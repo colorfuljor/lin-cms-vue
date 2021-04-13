@@ -50,6 +50,10 @@ export default {
         this.loading = false
         console.log(e)
       }
+      // this.$message({
+      //   message: "用户名或密码错误",
+      //   type: 'error',
+      // })
     },
     async getInformation() {
       try {

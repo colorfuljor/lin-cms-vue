@@ -6,6 +6,9 @@
           <h2 class="grid-title">收集列表</h2>
           <div>
             <el-button type="primary" style="margin: 30px 0 10px 5px" @click="handleAddCollect">新增</el-button>
+            <el-button type="primary" style="margin: 30px 0 10px 5px" @click="dialogLabelVisible = true"
+              >新增标签</el-button
+            >
           </div>
           <el-table
             :data="collectList"
@@ -57,7 +60,65 @@
         </div>
       </el-col>
     </el-row>
-    <el-dialog title="新增数据" :visible.sync="dialogCreateVisible"> </el-dialog>
+    <el-dialog title="新增数据" :visible.sync="dialogCreateVisible">
+      <h2>Prometheus</h2>
+      <el-input
+        v-model="addr"
+        placeholder="请输入IP地址"
+        style="width: 20%;
+    margin: 0 10px 10px;"
+      ></el-input>
+
+      <el-input v-model="port" placeholder="请输入端口"></el-input>
+      <div style="margin: 10px"></div>
+      <h2>开始时间</h2>
+      <el-date-picker
+        v-model="value1"
+        type="datetime"
+        format="timestamp"
+        placeholder="选择开始时间，将收集一小时内的数据"
+      >
+      </el-date-picker>
+      <div style="margin: 10px"></div>
+      <h2>算法标签</h2>
+      <el-select v-model="value" placeholder="请选择算法">
+        <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"> </el-option>
+      </el-select>
+      <div style="margin: 10px"></div>
+      <h2>流量标签</h2>
+      <el-select v-model="value" placeholder="请选择流量波形">
+        <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"> </el-option>
+      </el-select>
+      <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="dialogCreateVisible = false">确认</el-button>
+      </span>
+    </el-dialog>
+    <el-dialog title="新增标签" :visible.sync="dialogLabelVisible">
+      <h2>标签名</h2>
+      <el-input
+        v-model="addr"
+        placeholder="请输入标签名"
+        style="width: 20%;
+    margin: 10px;"
+        maxlength="10"
+        show-word-limit
+      ></el-input>
+      <h2>描述</h2>
+      <el-input
+        type="textarea"
+        :autosize="{ minRows: 2, maxRows: 4 }"
+        placeholder="请输入描述内容"
+        v-model="textarea2"
+        maxlength="30"
+        show-word-limit
+        style="margin: 10px;width: 80%"
+      >
+      </el-input>
+      <div style="margin: 10px"></div>
+      <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="dialogLabelVisible = false">确认</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -69,113 +130,74 @@ export default {
     return {
       roseData: [
         {
-          type: '服装',
-          value: 2700,
+          type: 'Static threshold',
+          value: 1,
         },
         {
-          type: '游戏',
-          value: 2500,
+          type: 'Q-learning',
+          value: 1,
         },
         {
-          type: '数码',
-          value: 1898,
+          type: 'SARSA',
+          value: 0,
         },
         {
-          type: '食品',
-          value: 2376,
-        },
-        {
-          type: '书籍',
-          value: 1760,
-        },
-        {
-          type: '其他',
-          value: 1500,
+          type: 'ARIMA',
+          value: 0,
         },
       ],
       groupColData: [
-        { month: '1月', area: '东区', value: 1200 },
-        { month: '1月', area: '南区', value: 800 },
-        { month: '1月', area: '北区', value: 900 },
-        { month: '2月', area: '东区', value: 800 },
-        { month: '2月', area: '南区', value: 1000 },
-        { month: '2月', area: '北区', value: 1100 },
-        { month: '3月', area: '东区', value: 600 },
-        { month: '3月', area: '南区', value: 988 },
-        { month: '3月', area: '北区', value: 866 },
-        { month: '4月', area: '东区', value: 1140 },
-        { month: '4月', area: '南区', value: 900 },
-        { month: '4月', area: '北区', value: 870 },
-        { month: '5月', area: '东区', value: 880 },
-        { month: '5月', area: '南区', value: 780 },
-        { month: '5月', area: '北区', value: 1168 },
-        { month: '6月', area: '东区', value: 800 },
-        { month: '6月', area: '南区', value: 840 },
-        { month: '6月', area: '北区', value: 850 },
-        { month: '7月', area: '东区', value: 900 },
-        { month: '7月', area: '南区', value: 890 },
-        { month: '7月', area: '北区', value: 1000 },
+        { algorithm: 'Static threshold', wave: 'Gentle', value: 1 },
+        { algorithm: 'Static threshold', wave: 'Rise', value: 0 },
+        { algorithm: 'Static threshold', wave: 'Decline', value: 0 },
+        { algorithm: 'Static threshold', wave: 'Burst', value: 0 },
+        { algorithm: 'Static threshold', wave: 'Diurnal', value: 0 },
+        { algorithm: 'Static threshold', wave: 'Seasonal', value: 0 },
+
+        { algorithm: 'Q-learning', wave: 'Gentle', value: 1 },
+        { algorithm: 'Q-learning', wave: 'Rise', value: 0 },
+        { algorithm: 'Q-learning', wave: 'Decline', value: 0 },
+        { algorithm: 'Q-learning', wave: 'Burst', value: 0 },
+        { algorithm: 'Q-learning', wave: 'Diurnal', value: 0 },
+        { algorithm: 'Q-learning', wave: 'Seasonal', value: 0 },
+
+        { algorithm: 'SARSA', wave: 'Gentle', value: 0 },
+        { algorithm: 'SARSA', wave: 'Rise', value: 0 },
+        { algorithm: 'SARSA', wave: 'Decline', value: 0 },
+        { algorithm: 'SARSA', wave: 'Burst', value: 0 },
+        { algorithm: 'SARSA', wave: 'Diurnal', value: 0 },
+        { algorithm: 'SARSA', wave: 'Seasonal', value: 0 },
+
+        { algorithm: 'ARIMA', wave: 'Gentle', value: 0 },
+        { algorithm: 'ARIMA', wave: 'Rise', value: 0 },
+        { algorithm: 'ARIMA', wave: 'Decline', value: 0 },
+        { algorithm: 'ARIMA', wave: 'Burst', value: 0 },
+        { algorithm: 'ARIMA', wave: 'Diurnal', value: 0 },
+        { algorithm: 'ARIMA', wave: 'Seasonal', value: 0 },
       ],
       collectList: [
         {
-          algorithm: 'static-scale',
-          wave: 'burst',
-          collector: 'colorful',
-          collectTime: '2021-05-02',
+          algorithm: 'Q-learning',
+          wave: 'Gentle',
+          collector: 'test',
+          collectTime: '2021-04-10',
         },
         {
-          algorithm: 'static-scale',
-          wave: 'burst',
-          collector: 'colorful',
-          collectTime: '2021-05-02',
-        },
-        {
-          algorithm: 'static-scale',
-          wave: 'burst',
-          collector: 'colorful',
-          collectTime: '2021-05-02',
-        },
-        {
-          algorithm: 'static-scale',
-          wave: 'burst',
-          collector: 'colorful',
-          collectTime: '2021-05-02',
-        },
-        {
-          algorithm: 'static-scale',
-          wave: 'burst',
-          collector: 'colorful',
-          collectTime: '2021-05-02',
-        },
-        {
-          algorithm: 'static-scale',
-          wave: 'burst',
-          collector: 'colorful',
-          collectTime: '2021-05-02',
-        },
-        {
-          algorithm: 'static-scale',
-          wave: 'burst',
-          collector: 'colorful',
-          collectTime: '2021-05-02',
-        },
-        {
-          algorithm: 'static-scale',
-          wave: 'burst',
-          collector: 'colorful',
-          collectTime: '2021-05-02',
-        },
-        {
-          algorithm: 'static-scale',
-          wave: 'burst',
-          collector: 'colorful',
-          collectTime: '2021-05-02',
+          algorithm: 'Static threshold',
+          wave: 'Gentle',
+          collector: 'test',
+          collectTime: '2021-04-10',
         },
       ],
       dialogCreateVisible: false,
-      totalNum: 100,
-      personNum: 10,
+      totalNum: 2,
+      personNum: 2,
       loading: false,
+
+      addr: '',
+      port: '',
+
+      dialogLabelVisible: false,
     }
   },
   mounted() {
@@ -202,19 +224,18 @@ export default {
       // 初始化个人收集状态直方图
       new GroupColumn('grouped-column', {
         data: this.groupColData,
-        groupField: 'area',
-        xField: 'month',
+        groupField: 'wave',
+        xField: 'algorithm',
         yField: 'value',
         meta: {
-          month: {
-            alias: '月份',
+          algorithm: {
+            alias: '算法',
           },
           value: {
             alias: '数量',
           },
         },
         forceFit: true,
-        color: ['#4577FF', '#00C292', '#FEC108'],
         columnSize: 12,
         legend: {
           visible: true,
