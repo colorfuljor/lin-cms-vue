@@ -235,6 +235,7 @@ export default {
             alias: '数量',
           },
         },
+        height: 360,
         forceFit: true,
         columnSize: 12,
         legend: {
@@ -261,7 +262,7 @@ export default {
   }
 
   .collect-list {
-    min-height: 580px;
+    height: 580px;
 
     .el-table {
       border: 0;
@@ -275,6 +276,10 @@ export default {
   }
   .collect-status {
     min-height: 400px;
+    padding-bottom: 0 !important;
+    #grouped-column {
+      margin-top: 25px;
+    }
   }
   .collect-influence {
     min-height: 400px;
@@ -286,11 +291,11 @@ export default {
     .personal-influence {
       display: flex;
       justify-content: space-between;
-      padding: 0 180px;
       .personal-influence-item {
         display: flex;
         flex-direction: column;
         align-items: center;
+        margin: auto;
         .personal-influence-num {
           font-size: 28px;
           line-height: 34px;
