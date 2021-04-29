@@ -5,7 +5,9 @@
         <div class="grid-content collect-list">
           <h2 class="grid-title">收集列表</h2>
           <div>
-            <el-button type="primary" style="margin: 30px 0 10px 5px" @click="handleAddCollect">新增</el-button>
+            <el-button type="primary" style="margin: 30px 0 10px 5px" @click="dialogCreateVisible = true"
+              >新增</el-button
+            >
             <el-button type="primary" style="margin: 30px 0 10px 5px" @click="dialogLabelVisible = true"
               >新增标签</el-button
             >
@@ -60,43 +62,43 @@
         </div>
       </el-col>
     </el-row>
-    <el-dialog title="新增数据" :visible.sync="dialogCreateVisible">
+    <el-dialog class="new-data" title="新增数据" :visible.sync="dialogCreateVisible" v-loading="createLoading">
       <h2>Prometheus</h2>
+      <div style="margin: 10px"></div>
+      <el-input class="ip-input" v-model="create_input.addr" placeholder="请输入IP地址" @blur="handleIPBlur"></el-input>
+      <div class="el-icon-warning error-tips" v-if="!isIPValid">IP地址不合法</div>
+      <div style="margin: 10px"></div>
       <el-input
-        v-model="addr"
-        placeholder="请输入IP地址"
-        style="width: 20%;
-    margin: 0 10px 10px;"
+        class="port-input"
+        v-model="create_input.port"
+        placeholder="请输入端口"
+        @blur="handlePortBlur"
       ></el-input>
-
-      <el-input v-model="port" placeholder="请输入端口"></el-input>
-      <div style="margin: 10px"></div>
+      <div class="el-icon-warning error-tips" v-if="!isPortValid">端口不合法</div>
+      <div style="margin: 20px"></div>
       <h2>开始时间</h2>
-      <el-date-picker
-        v-model="value1"
-        type="datetime"
-        format="timestamp"
-        placeholder="选择开始时间，将收集一小时内的数据"
-      >
-      </el-date-picker>
       <div style="margin: 10px"></div>
+      <el-date-picker v-model="create_input.startTime" type="datetime" placeholder="请选择开始时间"> </el-date-picker>
+      <div style="margin: 20px"></div>
       <h2>算法标签</h2>
-      <el-select v-model="value" placeholder="请选择算法">
-        <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"> </el-option>
-      </el-select>
       <div style="margin: 10px"></div>
+      <el-select v-model="create_input.algorithm" placeholder="请选择算法">
+        <el-option v-for="item in algorithms" :key="item.value" :label="item.text" :value="item.value"> </el-option>
+      </el-select>
+      <div style="margin: 20px"></div>
       <h2>流量标签</h2>
-      <el-select v-model="value" placeholder="请选择流量波形">
-        <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"> </el-option>
+      <div style="margin: 10px"></div>
+      <el-select v-model="create_input.wave" placeholder="请选择流量波形">
+        <el-option v-for="item in waves" :key="item.value" :label="item.text" :value="item.value"> </el-option>
       </el-select>
       <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="dialogCreateVisible = false">确认</el-button>
+        <el-button type="primary" @click="handleCreateData">确认</el-button>
       </span>
     </el-dialog>
     <el-dialog title="新增标签" :visible.sync="dialogLabelVisible">
       <h2>标签名</h2>
       <el-input
-        v-model="addr"
+        v-model="create_label_input.name"
         placeholder="请输入标签名"
         style="width: 20%;
     margin: 10px;"
@@ -108,7 +110,7 @@
         type="textarea"
         :autosize="{ minRows: 2, maxRows: 4 }"
         placeholder="请输入描述内容"
-        v-model="textarea2"
+        v-model="create_label_input.desc"
         maxlength="30"
         show-word-limit
         style="margin: 10px;width: 80%"
@@ -116,7 +118,7 @@
       </el-input>
       <div style="margin: 10px"></div>
       <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="dialogLabelVisible = false">确认</el-button>
+        <el-button type="primary" @click="handleCreateLabel">确认</el-button>
       </span>
     </el-dialog>
   </div>
@@ -124,10 +126,14 @@
 
 <script>
 import { Rose, GroupColumn } from '@antv/g2plot'
+import Label from '@/model/label'
+import Collect from '@/model/collect'
+import Validator from '@/utils/validator'
 
 export default {
   data() {
     return {
+      // ======== 展示数据 Begin ========
       roseData: [
         {
           type: 'Static threshold',
@@ -175,36 +181,46 @@ export default {
         { algorithm: 'ARIMA', wave: 'Diurnal', value: 0 },
         { algorithm: 'ARIMA', wave: 'Seasonal', value: 0 },
       ],
-      collectList: [
-        {
-          algorithm: 'Q-learning',
-          wave: 'Gentle',
-          collector: 'test',
-          collectTime: '2021-04-10',
-        },
-        {
-          algorithm: 'Static threshold',
-          wave: 'Gentle',
-          collector: 'test',
-          collectTime: '2021-04-10',
-        },
-      ],
-      dialogCreateVisible: false,
+      collectList: [],
+      algorithms: [],
+      waves: [],
       totalNum: 2,
       personNum: 2,
-      loading: false,
+      // ======== 展示数据 End ========
 
-      addr: '',
-      port: '',
+      // ======== 输入数据 Begin ========
+      create_input: {
+        addr: '',
+        port: '',
+        startTime: '',
+        algorithm: '',
+        wave: '',
+      },
+      create_label_input: {
+        name: '',
+        desc: '',
+      },
+      // ======== 输入数据 End ========
 
+      // ======== 控制数据 Begin ========
       dialogLabelVisible: false,
+      dialogCreateVisible: false,
+      isIPValid: true,
+      isPortValid: true,
+      createLoading: false,
+      // ======== 控制数据 End ========
     }
   },
   mounted() {
+    // 获取相关数据
+    this.getLabels()
+    this.getCollectList()
+
     // 初始化图表，必须在获取数据后
     this.initChart()
   },
   methods: {
+    // ======== 视图函数 Begin ========
     initChart() {
       // 初始化算法扇形图
       new Rose('rose-algorithm', {
@@ -244,9 +260,48 @@ export default {
         },
       }).render()
     },
-    handleAddCollect() {
-      this.dialogCreateVisible = true
+    // ======== 视图函数 End ========
+
+    // ======== 数据函数 Begin ========
+    async getLabels() {
+      this.algorithms = await Label.getAlgorithmLabels()
+      this.waves = await Label.getWaveLabels()
     },
+    async getCollectList() {
+      this.collectList = await Collect.getCollects()
+    },
+    // ======== 数据函数 End ========
+
+    // ======== 中间函数 Begin ========
+    // ======== 中间函数 End ========
+
+    // ======== 处理函数 Begin ========
+    async handleCreateData() {
+      this.createLoading = true
+      if (!this.isIPValid || !this.isPortValid) {
+        this.$message.error('输入参数不合法')
+      } else {
+        const res = { error: '' }
+        if (res.error !== '') {
+          this.$message.error(res.error)
+        } else {
+          this.$message.success('新增成功')
+          this.dialogCreateVisible = false
+        }
+      }
+      this.createLoading = false
+    },
+    async handleCreateLabel() {
+      this.createLoading = true
+      this.createLoading = false
+    },
+    handleIPBlur() {
+      this.isIPValid = Validator.validateIP(this.create_input.addr)
+    },
+    handlePortBlur() {
+      this.isPortValid = Validator.validatePort(this.create_input.port)
+    },
+    // ======== 处理函数 End ========
   },
 }
 </script>
@@ -325,6 +380,23 @@ export default {
   }
   .grid-title {
     font-size: 25px;
+  }
+  .new-data {
+    .el-input {
+      margin: 0 10px;
+    }
+    .el-select {
+      margin: 0 10px;
+    }
+    .ip-input {
+      width: 30%;
+    }
+    .port-input {
+      width: 20%;
+    }
+    .error-tips {
+      color: #f56c6c;
+    }
   }
 
   ::-webkit-scrollbar-track-piece {
