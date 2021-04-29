@@ -65,12 +65,12 @@
     <el-dialog class="new-data" title="新增数据" :visible.sync="dialogCreateVisible" v-loading="createLoading">
       <h2>Prometheus</h2>
       <div style="margin: 10px"></div>
-      <el-input class="ip-input" v-model="create_input.addr" placeholder="请输入IP地址" @blur="handleIPBlur"></el-input>
+      <el-input class="ip-input" v-model="createInput.addr" placeholder="请输入IP地址" @blur="handleIPBlur"></el-input>
       <div class="el-icon-warning error-tips" v-if="!isIPValid">IP地址不合法</div>
       <div style="margin: 10px"></div>
       <el-input
         class="port-input"
-        v-model="create_input.port"
+        v-model="createInput.port"
         placeholder="请输入端口"
         @blur="handlePortBlur"
       ></el-input>
@@ -78,42 +78,56 @@
       <div style="margin: 20px"></div>
       <h2>开始时间</h2>
       <div style="margin: 10px"></div>
-      <el-date-picker v-model="create_input.startTime" type="datetime" placeholder="请选择开始时间"> </el-date-picker>
+      <el-date-picker
+        v-model="createInput.startTime"
+        type="datetime"
+        placeholder="请选择开始时间"
+        @blur="handleStartTimeBlur"
+      >
+      </el-date-picker>
+      <div class="el-icon-warning error-tips" v-if="!isStartTimeValid">开始时间不允许为空</div>
       <div style="margin: 20px"></div>
       <h2>算法标签</h2>
       <div style="margin: 10px"></div>
-      <el-select v-model="create_input.algorithm" placeholder="请选择算法">
+      <el-select v-model="createInput.algorithm" placeholder="请选择算法" @blur="handleAlgorithmBlur">
         <el-option v-for="item in algorithms" :key="item.value" :label="item.text" :value="item.value"> </el-option>
       </el-select>
+      <div class="el-icon-warning error-tips" v-if="!isAlgorithmValid">算法标签不允许为空</div>
       <div style="margin: 20px"></div>
       <h2>流量标签</h2>
       <div style="margin: 10px"></div>
-      <el-select v-model="create_input.wave" placeholder="请选择流量波形">
+      <el-select v-model="createInput.wave" placeholder="请选择流量波形" @blur="handleWaveBlur">
         <el-option v-for="item in waves" :key="item.value" :label="item.text" :value="item.value"> </el-option>
       </el-select>
+      <div class="el-icon-warning error-tips" v-if="!isWaveValid">流量标签不允许为空</div>
       <span slot="footer" class="dialog-footer">
         <el-button type="primary" @click="handleCreateData">确认</el-button>
       </span>
     </el-dialog>
-    <el-dialog title="新增标签" :visible.sync="dialogLabelVisible">
+    <el-dialog class="new-label" title="新增标签" :visible.sync="dialogLabelVisible" v-loading="createLoading">
       <h2>标签名</h2>
+      <div style="margin: 10px"></div>
       <el-input
-        v-model="create_label_input.name"
+        class="label-name-input"
+        v-model="createLabelInput.name"
         placeholder="请输入标签名"
-        style="width: 20%;
-    margin: 10px;"
         maxlength="10"
         show-word-limit
-      ></el-input>
+        @blur="handleNameBlur"
+      >
+      </el-input>
+      <div class="el-icon-warning error-tips" v-if="!isNameValid">标签名不允许为空</div>
+      <div style="margin: 20px"></div>
       <h2>描述</h2>
+      <div style="margin: 10px"></div>
       <el-input
+        class="label-desc-input"
         type="textarea"
-        :autosize="{ minRows: 2, maxRows: 4 }"
+        :autosize="{ minRows: 4, maxRows: 8 }"
         placeholder="请输入描述内容"
-        v-model="create_label_input.desc"
+        v-model="createLabelInput.desc"
         maxlength="30"
         show-word-limit
-        style="margin: 10px;width: 80%"
       >
       </el-input>
       <div style="margin: 10px"></div>
@@ -134,69 +148,24 @@ export default {
   data() {
     return {
       // ======== 展示数据 Begin ========
-      roseData: [
-        {
-          type: 'Static threshold',
-          value: 1,
-        },
-        {
-          type: 'Q-learning',
-          value: 1,
-        },
-        {
-          type: 'SARSA',
-          value: 0,
-        },
-        {
-          type: 'ARIMA',
-          value: 0,
-        },
-      ],
-      groupColData: [
-        { algorithm: 'Static threshold', wave: 'Gentle', value: 1 },
-        { algorithm: 'Static threshold', wave: 'Rise', value: 0 },
-        { algorithm: 'Static threshold', wave: 'Decline', value: 0 },
-        { algorithm: 'Static threshold', wave: 'Burst', value: 0 },
-        { algorithm: 'Static threshold', wave: 'Diurnal', value: 0 },
-        { algorithm: 'Static threshold', wave: 'Seasonal', value: 0 },
-
-        { algorithm: 'Q-learning', wave: 'Gentle', value: 1 },
-        { algorithm: 'Q-learning', wave: 'Rise', value: 0 },
-        { algorithm: 'Q-learning', wave: 'Decline', value: 0 },
-        { algorithm: 'Q-learning', wave: 'Burst', value: 0 },
-        { algorithm: 'Q-learning', wave: 'Diurnal', value: 0 },
-        { algorithm: 'Q-learning', wave: 'Seasonal', value: 0 },
-
-        { algorithm: 'SARSA', wave: 'Gentle', value: 0 },
-        { algorithm: 'SARSA', wave: 'Rise', value: 0 },
-        { algorithm: 'SARSA', wave: 'Decline', value: 0 },
-        { algorithm: 'SARSA', wave: 'Burst', value: 0 },
-        { algorithm: 'SARSA', wave: 'Diurnal', value: 0 },
-        { algorithm: 'SARSA', wave: 'Seasonal', value: 0 },
-
-        { algorithm: 'ARIMA', wave: 'Gentle', value: 0 },
-        { algorithm: 'ARIMA', wave: 'Rise', value: 0 },
-        { algorithm: 'ARIMA', wave: 'Decline', value: 0 },
-        { algorithm: 'ARIMA', wave: 'Burst', value: 0 },
-        { algorithm: 'ARIMA', wave: 'Diurnal', value: 0 },
-        { algorithm: 'ARIMA', wave: 'Seasonal', value: 0 },
-      ],
+      roseData: [],
+      groupColData: [],
       collectList: [],
       algorithms: [],
       waves: [],
-      totalNum: 2,
-      personNum: 2,
+      totalNum: 0,
+      personNum: 0,
       // ======== 展示数据 End ========
 
       // ======== 输入数据 Begin ========
-      create_input: {
+      createInput: {
         addr: '',
         port: '',
         startTime: '',
         algorithm: '',
         wave: '',
       },
-      create_label_input: {
+      createLabelInput: {
         name: '',
         desc: '',
       },
@@ -207,14 +176,18 @@ export default {
       dialogCreateVisible: false,
       isIPValid: true,
       isPortValid: true,
+      isStartTimeValid: true,
+      isAlgorithmValid: true,
+      isWaveValid: true,
+      isNameValid: true,
       createLoading: false,
       // ======== 控制数据 End ========
     }
   },
-  mounted() {
+  async mounted() {
     // 获取相关数据
-    this.getLabels()
-    this.getCollectList()
+    await this.getLabels()
+    await this.getCollectList()
 
     // 初始化图表，必须在获取数据后
     this.initChart()
@@ -222,18 +195,19 @@ export default {
   methods: {
     // ======== 视图函数 Begin ========
     initChart() {
+      console.log(this.roseData)
       // 初始化算法扇形图
       new Rose('rose-algorithm', {
         data: this.roseData,
         radiusField: 'value',
-        categoryField: 'type',
-        colorField: 'type',
+        categoryField: 'algorithm',
+        colorField: 'algorithm',
         width: 500,
         height: 500,
         label: {
           visible: true,
           type: 'outer',
-          content: text => text.type,
+          content: text => text.algorithm,
         },
       }).render()
 
@@ -267,18 +241,81 @@ export default {
       this.algorithms = await Label.getAlgorithmLabels()
       this.waves = await Label.getWaveLabels()
     },
+    async getChartData() {
+      const { user } = this.$store.state
+      const collectNums = {}
+      this.totalNum = this.collectList.length
+      for (const oneCollect of this.collectList) {
+        if (!collectNums.hasOwnProperty(oneCollect.algorithm)) {
+          collectNums[oneCollect.algorithm] = {}
+          collectNums[oneCollect.algorithm][oneCollect.wave] = 0
+        } else if (!collectNums[oneCollect.algorithm].hasOwnProperty(oneCollect.wave)) {
+          collectNums[oneCollect.algorithm][oneCollect.wave] = 0
+        }
+        collectNums[oneCollect.algorithm][oneCollect.wave]++
+
+        if (oneCollect.collector === user.username) {
+          this.personNum++
+        }
+      }
+
+      for (const algorithm of this.algorithms) {
+        let count = 0
+        for (const wave of this.waves) {
+          let value
+          if (
+            !collectNums.hasOwnProperty(algorithm.value)
+            || !collectNums[algorithm.value].hasOwnProperty(wave.value)
+          ) {
+            value = 0
+          } else {
+            value = collectNums[algorithm.value][wave.value]
+          }
+          this.groupColData.push({
+            algorithm: algorithm.text,
+            wave: wave.text,
+            value,
+          })
+          count += value
+        }
+        this.roseData.push({
+          algorithm: algorithm.text,
+          value: count,
+        })
+      }
+    },
     async getCollectList() {
       this.collectList = await Collect.getCollects()
+      await this.getChartData()
     },
     // ======== 数据函数 End ========
 
     // ======== 中间函数 Begin ========
+    validateCreateInput() {
+      let ret = true
+      if (!this.handleIPBlur()) {
+        ret = false
+      }
+      if (!this.handlePortBlur()) {
+        ret = false
+      }
+      if (!this.handleStartTimeBlur()) {
+        ret = false
+      }
+      if (!this.handleAlgorithmBlur()) {
+        ret = false
+      }
+      if (!this.handleWaveBlur()) {
+        ret = false
+      }
+      return ret
+    },
     // ======== 中间函数 End ========
 
     // ======== 处理函数 Begin ========
     async handleCreateData() {
       this.createLoading = true
-      if (!this.isIPValid || !this.isPortValid) {
+      if (!this.validateCreateInput()) {
         this.$message.error('输入参数不合法')
       } else {
         const res = { error: '' }
@@ -293,13 +330,42 @@ export default {
     },
     async handleCreateLabel() {
       this.createLoading = true
+      if (!this.handleNameBlur()) {
+        this.$message.error('输入参数不合法')
+      } else {
+        const res = { error: '' }
+        if (res.error !== '') {
+          this.$message.error(res.error)
+        } else {
+          this.$message.success('新增成功')
+          this.dialogCreateVisible = false
+        }
+      }
       this.createLoading = false
     },
     handleIPBlur() {
-      this.isIPValid = Validator.validateIP(this.create_input.addr)
+      this.isIPValid = Validator.validateIP(this.createInput.addr)
+      return this.isIPValid
     },
     handlePortBlur() {
-      this.isPortValid = Validator.validatePort(this.create_input.port)
+      this.isPortValid = Validator.validatePort(this.createInput.port)
+      return this.isPortValid
+    },
+    handleStartTimeBlur() {
+      this.isStartTimeValid = this.createInput.startTime !== ''
+      return this.isStartTimeValid
+    },
+    handleAlgorithmBlur() {
+      this.isAlgorithmValid = this.createInput.algorithm !== ''
+      return this.isAlgorithmValid
+    },
+    handleWaveBlur() {
+      this.isWaveValid = this.createInput.wave !== ''
+      return this.isWaveValid
+    },
+    handleNameBlur() {
+      this.isNameValid = this.createLabelInput.name !== ''
+      return this.isNameValid
     },
     // ======== 处理函数 End ========
   },
@@ -393,6 +459,23 @@ export default {
     }
     .port-input {
       width: 20%;
+    }
+    .error-tips {
+      color: #f56c6c;
+    }
+  }
+  .new-label {
+    .el-input {
+      margin: 0 10px;
+    }
+    .el-textarea {
+      margin: 0 10px;
+    }
+    .label-name-input {
+      width: 20%;
+    }
+    .label-desc-input {
+      width: 80%;
     }
     .error-tips {
       color: #f56c6c;
