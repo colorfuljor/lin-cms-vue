@@ -122,7 +122,7 @@ _axios.interceptors.request.use(
 // Add a response interceptor
 _axios.interceptors.response.use(
   async res => {
-    let { code, msg, data } = res.data // eslint-disable-line
+    let { data } = res.data // eslint-disable-line
     if (res.status.toString().charAt(0) === '2') {
       return data
     }
@@ -152,27 +152,22 @@ _axios.interceptors.response.use(
           return resolve(result)
         }
       }
-      // 第一种情况：默认直接提示后端返回的异常信息；特殊情况：如果本次请求添加了 handleError: true，用户自己try catch，框架不做处理
-      if (res.config.handleError) {
-        return reject(res)
-      }
-      // 第二种情况：采用前端自己的一套异常提示信息；特殊情况：如果本次请求添加了 showBackend: true, 弹出后端返回错误信息。
-      if (Config.useFrontEndErrorMsg && !res.config.showBackend) {
-        // 弹出前端自定义错误信息
-        const errorArr = Object.entries(ErrorCode).filter(v => v[0] === code.toString())
-        // 匹配到前端自定义的错误码
-        if (errorArr.length > 0 && errorArr[0][1] !== '') {
-          msg = errorArr[0][1] // eslint-disable-line
-        } else {
-          msg = ErrorCode['777']
-        }
+
+      const err = msg
+      // 弹出前端自定义错误信息
+      const errorArr = Object.entries(ErrorCode).filter(v => v[0] === code.toString())
+      // 匹配到前端自定义的错误码
+      if (errorArr.length > 0 && errorArr[0][1] !== '') {
+        msg = errorArr[0][1] // eslint-disable-line
+      } else {
+        msg = ErrorCode['777']
       }
 
       Vue.prototype.$message({
         message: msg,
         type: 'error',
       })
-      reject()
+      reject(err)
     })
   },
   error => {

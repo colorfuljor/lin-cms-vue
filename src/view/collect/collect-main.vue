@@ -66,7 +66,7 @@
       <h2>Prometheus</h2>
       <div style="margin: 10px"></div>
       <el-input class="ip-input" v-model="createInput.addr" placeholder="请输入IP地址" @blur="handleIPBlur"></el-input>
-      <div class="el-icon-warning error-tips" v-if="!isIPValid">IP地址不合法</div>
+      <div class="el-icon-warning error-tips" v-if="!isIPValid">&ensp;IP地址不合法</div>
       <div style="margin: 10px"></div>
       <el-input
         class="port-input"
@@ -74,7 +74,7 @@
         placeholder="请输入端口"
         @blur="handlePortBlur"
       ></el-input>
-      <div class="el-icon-warning error-tips" v-if="!isPortValid">端口不合法</div>
+      <div class="el-icon-warning error-tips" v-if="!isPortValid">&ensp;端口不合法</div>
       <div style="margin: 20px"></div>
       <h2>开始时间</h2>
       <div style="margin: 10px"></div>
@@ -85,21 +85,21 @@
         @blur="handleStartTimeBlur"
       >
       </el-date-picker>
-      <div class="el-icon-warning error-tips" v-if="!isStartTimeValid">开始时间不允许为空</div>
+      <div class="el-icon-warning error-tips" v-if="!isStartTimeValid">&ensp;开始时间不允许为空</div>
       <div style="margin: 20px"></div>
       <h2>算法标签</h2>
       <div style="margin: 10px"></div>
-      <el-select v-model="createInput.algorithm" placeholder="请选择算法" @blur="handleAlgorithmBlur">
+      <el-select v-model="createInput.algorithm" placeholder="请选择算法">
         <el-option v-for="item in algorithms" :key="item.value" :label="item.text" :value="item.value"> </el-option>
       </el-select>
-      <div class="el-icon-warning error-tips" v-if="!isAlgorithmValid">算法标签不允许为空</div>
+      <div class="el-icon-warning error-tips" v-if="!isAlgorithmValid">&ensp;算法标签不允许为空</div>
       <div style="margin: 20px"></div>
       <h2>流量标签</h2>
       <div style="margin: 10px"></div>
-      <el-select v-model="createInput.wave" placeholder="请选择流量波形" @blur="handleWaveBlur">
+      <el-select v-model="createInput.wave" placeholder="请选择流量波形">
         <el-option v-for="item in waves" :key="item.value" :label="item.text" :value="item.value"> </el-option>
       </el-select>
-      <div class="el-icon-warning error-tips" v-if="!isWaveValid">流量标签不允许为空</div>
+      <div class="el-icon-warning error-tips" v-if="!isWaveValid">&ensp;流量标签不允许为空</div>
       <span slot="footer" class="dialog-footer">
         <el-button type="primary" @click="handleCreateData">确认</el-button>
       </span>
@@ -116,7 +116,7 @@
         @blur="handleNameBlur"
       >
       </el-input>
-      <div class="el-icon-warning error-tips" v-if="!isNameValid">标签名不允许为空</div>
+      <div class="el-icon-warning error-tips" v-if="!isNameValid">&ensp;标签名不允许为空</div>
       <div style="margin: 20px"></div>
       <h2>描述</h2>
       <div style="margin: 10px"></div>
@@ -153,7 +153,7 @@ export default {
       collectList: [],
       algorithms: [],
       waves: [],
-      totalNum: 0,
+      totalNum: 1,
       personNum: 0,
       // ======== 展示数据 End ========
 
@@ -192,10 +192,14 @@ export default {
     // 初始化图表，必须在获取数据后
     this.initChart()
   },
+  watch: {
+    collectList() {
+      this.getChartData()
+    },
+  },
   methods: {
     // ======== 视图函数 Begin ========
     initChart() {
-      console.log(this.roseData)
       // 初始化算法扇形图
       new Rose('rose-algorithm', {
         data: this.roseData,
@@ -241,7 +245,7 @@ export default {
       this.algorithms = await Label.getAlgorithmLabels()
       this.waves = await Label.getWaveLabels()
     },
-    async getChartData() {
+    getChartData() {
       const { user } = this.$store.state
       const collectNums = {}
       this.totalNum = this.collectList.length
@@ -286,7 +290,6 @@ export default {
     },
     async getCollectList() {
       this.collectList = await Collect.getCollects()
-      await this.getChartData()
     },
     // ======== 数据函数 End ========
 
@@ -318,13 +321,16 @@ export default {
       if (!this.validateCreateInput()) {
         this.$message.error('输入参数不合法')
       } else {
-        const res = { error: '' }
-        if (res.error !== '') {
-          this.$message.error(res.error)
-        } else {
-          this.$message.success('新增成功')
-          this.dialogCreateVisible = false
-        }
+        await Collect.createCollect(this.createInput)
+          .then(res => {
+            this.$message.success('新增成功')
+            this.dialogCreateVisible = false
+            this.createInput = {}
+            if (res.data) {
+              this.collectList = res.data
+            }
+          })
+          .catch(() => {})
       }
       this.createLoading = false
     },
@@ -333,7 +339,7 @@ export default {
       if (!this.handleNameBlur()) {
         this.$message.error('输入参数不合法')
       } else {
-        const res = { error: '' }
+        const res = Collect.createCollect(this.createInput)
         if (res.error !== '') {
           this.$message.error(res.error)
         } else {

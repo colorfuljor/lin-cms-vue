@@ -5,7 +5,7 @@ class Collect {
   async createCollect(data) {
     return _axios({
       method: 'post',
-      url: 'collect/create',
+      url: 'collect',
       data,
     })
   }
