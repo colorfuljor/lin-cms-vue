@@ -7,8 +7,8 @@ class Label {
   async getAlgorithmLabels() {
     return [
       {
-        text: 'Static threshold',
-        value: 'Static threshold',
+        text: 'Static Threshold',
+        value: 'Static Threshold',
         desc: '测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试',
       },
       { text: 'Q-learning', value: 'Q-learning', desc: '' },

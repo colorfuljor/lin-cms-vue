@@ -11,20 +11,10 @@ class Collect {
   }
 
   async getCollects() {
-    return [
-      {
-        algorithm: 'Q-learning',
-        wave: 'Gentle',
-        collector: 'test',
-        collectTime: '2021-04-10',
-      },
-      {
-        algorithm: 'Static threshold',
-        wave: 'Gentle',
-        collector: 'test',
-        collectTime: '2021-04-10',
-      },
-    ]
+    return _axios({
+      method: 'get',
+      url: 'collect',
+    })
   }
 }
 

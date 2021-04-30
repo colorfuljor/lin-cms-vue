@@ -19,8 +19,8 @@
             max-height="480px"
           >
             <el-table-column type="index" width="60" align="center"></el-table-column>
-            <el-table-column prop="algorithm" label="算法" width="270"> </el-table-column>
-            <el-table-column prop="wave" label="流量波形" width="270"> </el-table-column>
+            <el-table-column prop="algorithmType" label="算法" width="270"> </el-table-column>
+            <el-table-column prop="waveType" label="流量波形" width="270"> </el-table-column>
             <el-table-column prop="collector" label="收集者" width="270"> </el-table-column>
             <el-table-column prop="collectTime" label="收集时间"> </el-table-column>
           </el-table>
@@ -45,7 +45,7 @@
           <h2 class="grid-title">个人贡献率</h2>
           <el-progress
             type="circle"
-            :percentage="(personNum / totalNum) * 100"
+            :percentage="Math.floor((personNum / totalNum) * 100)"
             color="#8e71c7"
             :width="250"
           ></el-progress>
@@ -144,6 +144,32 @@ import Label from '@/model/label'
 import Collect from '@/model/collect'
 import Validator from '@/utils/validator'
 
+function formatDate(now) {
+  const year = now.getFullYear()
+  let month = (now.getMonth() + 1).toString()
+  let day = now.getDate().toString()
+  let hour = now.getHours().toString()
+  let minute = now.getMinutes().toString()
+  let second = now.getSeconds().toString()
+  if (month.length === 1) {
+    month = `0${month}`
+  }
+  if (day.length === 1) {
+    day = `0${day}`
+  }
+  if (hour.length === 1) {
+    hour = `0${hour}`
+  }
+  if (minute.length === 1) {
+    minute = `0${minute}`
+  }
+
+  if (second.length === 1) {
+    second = `0${second}`
+  }
+  return `${year}-${month}-${day} ${hour}:${minute}:${second}`
+}
+
 export default {
   data() {
     return {
@@ -194,6 +220,10 @@ export default {
   },
   watch: {
     collectList() {
+      this.collectList.forEach(collect => {
+        const date = new Date(collect.collectTime * 1000)
+        collect.collectTime = formatDate(date)
+      })
       this.getChartData()
     },
   },
@@ -250,13 +280,13 @@ export default {
       const collectNums = {}
       this.totalNum = this.collectList.length
       for (const oneCollect of this.collectList) {
-        if (!collectNums.hasOwnProperty(oneCollect.algorithm)) {
-          collectNums[oneCollect.algorithm] = {}
-          collectNums[oneCollect.algorithm][oneCollect.wave] = 0
-        } else if (!collectNums[oneCollect.algorithm].hasOwnProperty(oneCollect.wave)) {
-          collectNums[oneCollect.algorithm][oneCollect.wave] = 0
+        if (!collectNums.hasOwnProperty(oneCollect.algorithmType)) {
+          collectNums[oneCollect.algorithmType] = {}
+          collectNums[oneCollect.algorithmType][oneCollect.waveType] = 0
+        } else if (!collectNums[oneCollect.algorithmType].hasOwnProperty(oneCollect.waveType)) {
+          collectNums[oneCollect.algorithmType][oneCollect.waveType] = 0
         }
-        collectNums[oneCollect.algorithm][oneCollect.wave]++
+        collectNums[oneCollect.algorithmType][oneCollect.waveType]++
 
         if (oneCollect.collector === user.username) {
           this.personNum++
@@ -326,8 +356,8 @@ export default {
             this.$message.success('新增成功')
             this.dialogCreateVisible = false
             this.createInput = {}
-            if (res.data) {
-              this.collectList = res.data
+            if (res) {
+              this.collectList = res
             }
           })
           .catch(() => {})
@@ -339,7 +369,9 @@ export default {
       if (!this.handleNameBlur()) {
         this.$message.error('输入参数不合法')
       } else {
-        const res = Collect.createCollect(this.createInput)
+        const param = JSON.parse(JSON.stringify(this.createInput))
+        param.startTime = Date.parse(param.startTime) / 1000
+        const res = Collect.createCollect(param)
         if (res.error !== '') {
           this.$message.error(res.error)
         } else {
