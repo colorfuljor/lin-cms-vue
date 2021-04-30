@@ -19,6 +19,20 @@ class Validator {
       return num >= 0 && num <= 65535
     }
   }
+
+  validateLabelType(data) {
+    const reg = /^\d+$/
+    if (!reg.test(data)) {
+      return false
+    }
+
+    let num = parseInt(data)
+    if (num === NaN) {
+      return false
+    } else {
+      return num >= 0 && num <= 1
+    }
+  }
 }
 
 export default new Validator()

@@ -90,14 +90,14 @@
       <h2>算法标签</h2>
       <div style="margin: 10px"></div>
       <el-select v-model="createInput.algorithm" placeholder="请选择算法">
-        <el-option v-for="item in algorithms" :key="item.value" :label="item.text" :value="item.value"> </el-option>
+        <el-option v-for="item in algorithms" :key="item.name" :label="item.name" :value="item.name"> </el-option>
       </el-select>
       <div class="el-icon-warning error-tips" v-if="!isAlgorithmValid">&ensp;算法标签不允许为空</div>
       <div style="margin: 20px"></div>
       <h2>流量标签</h2>
       <div style="margin: 10px"></div>
       <el-select v-model="createInput.wave" placeholder="请选择流量波形">
-        <el-option v-for="item in waves" :key="item.value" :label="item.text" :value="item.value"> </el-option>
+        <el-option v-for="item in waves" :key="item.name" :label="item.name" :value="item.name"> </el-option>
       </el-select>
       <div class="el-icon-warning error-tips" v-if="!isWaveValid">&ensp;流量标签不允许为空</div>
       <span slot="footer" class="dialog-footer">
@@ -111,12 +111,16 @@
         class="label-name-input"
         v-model="createLabelInput.name"
         placeholder="请输入标签名"
-        maxlength="10"
+        maxlength="20"
         show-word-limit
         @blur="handleNameBlur"
       >
       </el-input>
       <div class="el-icon-warning error-tips" v-if="!isNameValid">&ensp;标签名不允许为空</div>
+      <el-select class="label-type-input" v-model="createLabelInput.type" placeholder="请选择标签类型">
+        <el-option v-for="item in types" :key="item.value" :label="item.text" :value="item.value"> </el-option>
+      </el-select>
+      <div class="el-icon-warning error-tips" v-if="!isTypeValid">&ensp;标签类型不允许为空</div>
       <div style="margin: 20px"></div>
       <h2>描述</h2>
       <div style="margin: 10px"></div>
@@ -126,7 +130,7 @@
         :autosize="{ minRows: 4, maxRows: 8 }"
         placeholder="请输入描述内容"
         v-model="createLabelInput.desc"
-        maxlength="30"
+        maxlength="50"
         show-word-limit
       >
       </el-input>
@@ -181,6 +185,7 @@ export default {
       waves: [],
       totalNum: 1,
       personNum: 0,
+      types: [{ value: 0, text: '算法' }, { value: 1, text: '波形' }],
       // ======== 展示数据 End ========
 
       // ======== 输入数据 Begin ========
@@ -194,6 +199,7 @@ export default {
       createLabelInput: {
         name: '',
         desc: '',
+        type: '',
       },
       // ======== 输入数据 End ========
 
@@ -206,14 +212,16 @@ export default {
       isAlgorithmValid: true,
       isWaveValid: true,
       isNameValid: true,
+      isTypeValid: true,
       createLoading: false,
       // ======== 控制数据 End ========
     }
   },
   async mounted() {
     // 获取相关数据
-    await this.getLabels()
+    await this.getAlgorithms()
     await this.getCollectList()
+    await this.getWaves()
 
     // 初始化图表，必须在获取数据后
     this.initChart()
@@ -271,8 +279,10 @@ export default {
     // ======== 视图函数 End ========
 
     // ======== 数据函数 Begin ========
-    async getLabels() {
+    async getAlgorithms() {
       this.algorithms = await Label.getAlgorithmLabels()
+    },
+    async getWaves() {
       this.waves = await Label.getWaveLabels()
     },
     getChartData() {
@@ -343,6 +353,16 @@ export default {
       }
       return ret
     },
+    validateCreateLbelInput() {
+      let ret = true
+      if (!this.handleNameBlur()) {
+        ret = false
+      }
+      if (!this.handleTypeBlur()) {
+        ret = false
+      }
+      return ret
+    },
     // ======== 中间函数 End ========
 
     // ======== 处理函数 Begin ========
@@ -351,7 +371,9 @@ export default {
       if (!this.validateCreateInput()) {
         this.$message.error('输入参数不合法')
       } else {
-        await Collect.createCollect(this.createInput)
+        const param = JSON.parse(JSON.stringify(this.createInput))
+        param.startTime = Date.parse(param.startTime) / 1000
+        await Collect.createCollect(param)
           .then(res => {
             this.$message.success('新增成功')
             this.dialogCreateVisible = false
@@ -366,18 +388,21 @@ export default {
     },
     async handleCreateLabel() {
       this.createLoading = true
-      if (!this.handleNameBlur()) {
+      if (!this.validateCreateLbelInput()) {
         this.$message.error('输入参数不合法')
       } else {
-        const param = JSON.parse(JSON.stringify(this.createInput))
-        param.startTime = Date.parse(param.startTime) / 1000
-        const res = Collect.createCollect(param)
-        if (res.error !== '') {
-          this.$message.error(res.error)
-        } else {
+        await Label.createLabel(this.createLabelInput).then(res => {
           this.$message.success('新增成功')
-          this.dialogCreateVisible = false
-        }
+          this.dialogLabelVisible = false
+          if (res) {
+            if (this.createLabelInput.type === 0) {
+              this.algorithms = res
+            } else if (this.createLabelInput.type === 1) {
+              this.waves = res
+            }
+          }
+          this.createLabelInput = {}
+        })
       }
       this.createLoading = false
     },
@@ -390,20 +415,24 @@ export default {
       return this.isPortValid
     },
     handleStartTimeBlur() {
-      this.isStartTimeValid = this.createInput.startTime !== ''
+      this.isStartTimeValid = this.createInput.startTime && this.createInput.startTime !== ''
       return this.isStartTimeValid
     },
     handleAlgorithmBlur() {
-      this.isAlgorithmValid = this.createInput.algorithm !== ''
+      this.isAlgorithmValid = this.createInput.algorithm && this.createInput.algorithm !== ''
       return this.isAlgorithmValid
     },
     handleWaveBlur() {
-      this.isWaveValid = this.createInput.wave !== ''
+      this.isWaveValid = this.createInput.wave && this.createInput.wave !== ''
       return this.isWaveValid
     },
     handleNameBlur() {
-      this.isNameValid = this.createLabelInput.name !== ''
+      this.isNameValid = this.createLabelInput.name && this.createLabelInput.name !== ''
       return this.isNameValid
+    },
+    handleTypeBlur() {
+      this.isTypeValid = Validator.validateLabelType(this.createLabelInput.type)
+      return this.isTypeValid
     },
     // ======== 处理函数 End ========
   },
@@ -507,6 +536,9 @@ export default {
       margin: 0 10px;
     }
     .el-textarea {
+      margin: 0 10px;
+    }
+    .el-select {
       margin: 0 10px;
     }
     .label-name-input {

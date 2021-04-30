@@ -2,30 +2,32 @@
 import _axios, { get, put, _delete } from '@/lin/plugin/axios'
 
 class Label {
-  async createLabel(data) {}
+  async createLabel(data) {
+    return _axios({
+      method: 'post',
+      url: 'label',
+      data,
+    })
+  }
 
   async getAlgorithmLabels() {
-    return [
-      {
-        text: 'Static Threshold',
-        value: 'Static Threshold',
-        desc: '测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试',
+    return _axios({
+      method: 'get',
+      url: 'label',
+      params: {
+        type: 0,
       },
-      { text: 'Q-learning', value: 'Q-learning', desc: '' },
-      { text: 'SARSA', value: 'SARSA', desc: '' },
-      { text: 'ARIMA', value: 'ARIMA', desc: '' },
-    ]
+    })
   }
 
   async getWaveLabels() {
-    return [
-      { text: 'Gentle', value: 'Gentle' },
-      { text: 'Rise', value: 'Rise' },
-      { text: 'Decline', value: 'Decline' },
-      { text: 'Burst', value: 'Burst' },
-      { text: 'Diurnal', value: 'Diurnal' },
-      { text: 'Seasonal', value: 'Seasonal' },
-    ]
+    return _axios({
+      method: 'get',
+      url: 'label',
+      params: {
+        type: 1,
+      },
+    })
   }
 }
 
