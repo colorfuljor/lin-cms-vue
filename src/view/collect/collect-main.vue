@@ -19,10 +19,10 @@
             max-height="480px"
           >
             <el-table-column type="index" width="60" align="center"></el-table-column>
-            <el-table-column prop="algorithmType" label="算法" width="270"> </el-table-column>
-            <el-table-column prop="waveType" label="流量波形" width="270"> </el-table-column>
-            <el-table-column prop="collector" label="收集者" width="270"> </el-table-column>
-            <el-table-column prop="collectTime" label="收集时间"> </el-table-column>
+            <el-table-column prop="algorithmType" label="算法" width="180"> </el-table-column>
+            <el-table-column prop="waveType" label="流量波形" width="180"> </el-table-column>
+            <el-table-column prop="collector" label="收集者" width="180"> </el-table-column>
+            <el-table-column prop="collectTime" label="收集时间" width="360"> </el-table-column>
           </el-table>
         </div>
       </el-col>
@@ -220,8 +220,8 @@ export default {
   async mounted() {
     // 获取相关数据
     await this.getAlgorithms()
-    await this.getCollectList()
     await this.getWaves()
+    await this.getCollectList()
 
     // 初始化图表，必须在获取数据后
     this.initChart()
@@ -307,23 +307,20 @@ export default {
         let count = 0
         for (const wave of this.waves) {
           let value
-          if (
-            !collectNums.hasOwnProperty(algorithm.value)
-            || !collectNums[algorithm.value].hasOwnProperty(wave.value)
-          ) {
+          if (!collectNums.hasOwnProperty(algorithm.name) || !collectNums[algorithm.name].hasOwnProperty(wave.name)) {
             value = 0
           } else {
-            value = collectNums[algorithm.value][wave.value]
+            value = collectNums[algorithm.name][wave.name]
           }
           this.groupColData.push({
-            algorithm: algorithm.text,
-            wave: wave.text,
+            algorithm: algorithm.name,
+            wave: wave.name,
             value,
           })
           count += value
         }
         this.roseData.push({
-          algorithm: algorithm.text,
+          algorithm: algorithm.name,
           value: count,
         })
       }
