@@ -2,21 +2,29 @@
   <div class="container">
     <div class="option">
       <el-radio-group v-model="activeTag">
-        <el-radio-button label="全部"></el-radio-button>
-        <el-radio-button label="个人"></el-radio-button>
+        <el-radio-button label="all">全部</el-radio-button>
+        <el-radio-button label="personal">个人</el-radio-button>
       </el-radio-group>
-      <el-select v-model="selectAlgorithm" placeholder="请选择算法">
-        <el-option v-for="item in algorithms" :key="item.value" :label="item.text" :value="item.value"> </el-option>
+      <el-select
+        v-model="selectAlgorithm"
+        @change="
+          comAlgorithm = ''
+          comWave = ''
+          destoryChart()
+        "
+        placeholder="请选择算法"
+      >
+        <el-option v-for="item in algorithms" :key="item.name" :label="item.name" :value="item.name"> </el-option>
       </el-select>
     </div>
     <div class="analysis">
       <div class="data">
-        <el-tabs v-model="activeWave">
+        <el-tabs v-model="activeWave" v-if="metrics[selectAlgorithm]">
           <el-tab-pane
-            v-for="metric in metrics[selectAlgorithm]"
-            :label="metric.wave"
-            :name="metric.wave"
-            :key="metric.wave"
+            v-for="[wave, metric] of Object.entries(metrics[selectAlgorithm])"
+            :label="wave"
+            :name="wave"
+            :key="wave"
           >
             <el-row :gutter="20">
               <el-col :span="4">
@@ -40,7 +48,7 @@
               <el-col :span="4">
                 <div class="grid-content bg-purple">
                   <h2>平均容器数</h2>
-                  <div class="metric-value">{{ metric.pod }}</div>
+                  <div class="metric-value">{{ metric.meanPod }}</div>
                 </div>
               </el-col>
               <el-col :span="4">
@@ -52,7 +60,7 @@
               <el-col :span="4">
                 <div class="grid-content bg-purple">
                   <h2>SLA满足度</h2>
-                  <div class="metric-value">{{ metric.sla }}%</div>
+                  <div class="metric-value">{{ metric.slaSatisfaction }}%</div>
                 </div>
               </el-col>
             </el-row>
@@ -65,19 +73,26 @@
       </div>
     </div>
     <div class="comparison">
-      <el-select v-model="comAlgorithm" placeholder="请选择对比算法">
-        <el-option v-for="item in algorithms4com" :key="item.value" :label="item.text" :value="item.value"> </el-option>
+      <el-select
+        v-model="comAlgorithm"
+        @change="
+          comWave = ''
+          destoryChart()
+        "
+        placeholder="请选择对比算法"
+      >
+        <el-option v-for="item in algorithms4com" :key="item.name" :label="item.name" :value="item.name"> </el-option>
       </el-select>
-      <el-select v-model="comWave" @change="handleCompare" placeholder="请选择流量" no-data-text="请先选择对比算法">
-        <el-option v-for="item in wave4com" :key="item.wave" :label="item.wave" :value="item.wave"> </el-option>
+      <el-select v-model="comWave" @change="handleCompare" placeholder="请选择流量" no-data-text="无可对比的流量">
+        <el-option v-for="item in wave4com" :key="item" :label="item" :value="item"> </el-option>
       </el-select>
       <el-row :gutter="16">
         <el-col :span="4"><div id="reliability"></div></el-col>
         <el-col :span="4"><div id="availability"></div></el-col>
         <el-col :span="4"><div id="stability"></div></el-col>
-        <el-col :span="4"><div id="pod"></div></el-col>
+        <el-col :span="4"><div id="meanPod"></div></el-col>
         <el-col :span="4"><div id="elasticity"></div></el-col>
-        <el-col :span="4"><div id="sla"></div></el-col>
+        <el-col :span="4"><div id="slaSatisfaction"></div></el-col>
       </el-row>
     </div>
   </div>
@@ -85,203 +100,91 @@
 
 <script>
 import { GroupColumn } from '@antv/g2plot'
+import Label from '@/model/label'
+import Metric from '@/model/metric'
 
 export default {
   data() {
     return {
-      // 缓存数据
-      activeTag: '全部',
-      selectAlgorithm: 'Static threshold',
+      // ======== 展示数据 Begin ========
+      algorithms: [],
+      allMetrics: {},
+      personalMetrics: {},
+      groupColData: [],
+      // ======== 展示数据 End ========
+
+      // ======== 控制数据 Begin ========
+      activeTag: 'all',
+      selectAlgorithm: 'Static Threshold',
       activeWave: 'Gentle',
       comAlgorithm: '',
       comWave: '',
       desc: '',
-
-      // 源数据
-      algorithms: [
-        {
-          text: 'Static threshold',
-          value: 'Static threshold',
-          desc: '测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试测试',
-        },
-        { text: 'Q-learning', value: 'Q-learning', desc: '' },
-        { text: 'SARSA', value: 'SARSA', desc: '' },
-        { text: 'ARIMA', value: 'ARIMA', desc: '' },
-      ],
-      metrics: {
-        'Static threshold': [
-          {
-            wave: 'Gentle',
-            reliability: 99.55,
-            availability: 97.44,
-            stability: 0.01514,
-            pod: 3.04,
-            elasticity: 42.16,
-            sla: 93.36,
-          },
-          {
-            wave: 'Rise',
-            reliability: 99.55,
-            availability: 97.44,
-            stability: 0.01514,
-            pod: 3.04,
-            elasticity: 42.16,
-            sla: 93.36,
-          },
-          {
-            wave: 'Decline',
-            reliability: 99.55,
-            availability: 97.44,
-            stability: 0.01514,
-            pod: 3.04,
-            elasticity: 42.16,
-            sla: 93.36,
-          },
-          {
-            wave: 'Burst',
-            reliability: 99.55,
-            availability: 97.44,
-            stability: 0.01514,
-            pod: 3.04,
-            elasticity: 42.16,
-            sla: 93.36,
-          },
-          {
-            wave: 'Diurnal',
-            reliability: 99.55,
-            availability: 97.44,
-            stability: 0.01514,
-            pod: 3.04,
-            elasticity: 42.16,
-            sla: 93.36,
-          },
-          {
-            wave: 'Seasonal',
-            reliability: 99.55,
-            availability: 97.44,
-            stability: 0.01514,
-            pod: 3.04,
-            elasticity: 42.16,
-            sla: 93.36,
-          },
-        ],
-        'Q-learning': [
-          {
-            wave: 'Gentle',
-            reliability: 100.0,
-            availability: 100.0,
-            stability: 0.02744,
-            pod: 3.37,
-            elasticity: 12.99,
-            sla: 99.78,
-          },
-          {
-            wave: 'Rise',
-            reliability: 100.0,
-            availability: 100.0,
-            stability: 0.02744,
-            pod: 3.37,
-            elasticity: 12.99,
-            sla: 99.78,
-          },
-          {
-            wave: 'Decline',
-            reliability: 100.0,
-            availability: 100.0,
-            stability: 0.02744,
-            pod: 3.37,
-            elasticity: 12.99,
-            sla: 99.78,
-          },
-          {
-            wave: 'Burst',
-            reliability: 99.55,
-            availability: 97.44,
-            stability: 0.01514,
-            pod: 3.04,
-            elasticity: 42.16,
-            sla: 93.36,
-          },
-          {
-            wave: 'Diurnal',
-            reliability: 99.55,
-            availability: 97.44,
-            stability: 0.01514,
-            pod: 3.04,
-            elasticity: 42.16,
-            sla: 93.36,
-          },
-          {
-            wave: 'Seasonal',
-            reliability: 99.55,
-            availability: 97.44,
-            stability: 0.01514,
-            pod: 3.04,
-            elasticity: 42.16,
-            sla: 93.36,
-          },
-        ],
-      },
-      groupColData: [
-        [
-          { algorithm: 'Static threshold', value: 99.55, reliability: '可靠性', metric: 'reliability' },
-          { algorithm: 'Q-learning', value: 100.0, reliability: '可靠性', metric: 'reliability' },
-        ],
-        [
-          { algorithm: 'Static threshold', value: 97.44, availability: '可用性', metric: 'availability' },
-          { algorithm: 'Q-learning', value: 100.0, availability: '可用性', metric: 'availability' },
-        ],
-        [
-          { algorithm: 'Static threshold', value: 0.01514, stability: '服务稳定性', metric: 'stability' },
-          { algorithm: 'Q-learning', value: 0.02744, stability: '服务稳定性', metric: 'stability' },
-        ],
-        [
-          { algorithm: 'Static threshold', value: 3.04, pod: '平均容器数', metric: 'pod' },
-          { algorithm: 'Q-learning', value: 3.37, pod: '平均容器数', metric: 'pod' },
-        ],
-        [
-          { algorithm: 'Static threshold', value: 42.16, sla: '弹性', metric: 'sla' },
-          { algorithm: 'Q-learning', value: 12.99, sla: '弹性', metric: 'sla' },
-        ],
-        [
-          { algorithm: 'Static threshold', value: 93.36, elasticity: 'SLA满足度', metric: 'elasticity' },
-          { algorithm: 'Q-learning', value: 99.78, elasticity: 'SLA满足度', metric: 'elasticity' },
-        ],
-      ],
+      groupCols: [],
+      // ======== 控制数据 End ========
     }
   },
-  mounted() {},
+  async mounted() {
+    // 获取相关数据
+    await this.getAlgorithms()
+    await this.getMetrics()
+
+    // 获取跳转参数
+    this.getQuery()
+  },
   computed: {
     algorithms4com() {
       const tmp = this.selectAlgorithm
-      return this.algorithms.filter(data => data.text !== tmp)
+      return this.algorithms.filter(data => data.name !== tmp)
     },
     wave4com() {
       const tmp = this.metrics[this.comAlgorithm]
-      if (tmp) {
-        return this.metrics[this.selectAlgorithm].filter(data => {
-          for (const item of tmp) {
-            if (item.wave === data.wave) {
-              return true
-            }
-          }
-          return false
-        })
+      if (tmp && this.metrics[this.selectAlgorithm]) {
+        return Object.keys(this.metrics[this.selectAlgorithm]).filter(wave => tmp.hasOwnProperty(wave))
       }
       return []
     },
+    metrics() {
+      if (this.activeTag === 'all') {
+        return this.allMetrics
+      }
+      if (this.activeTag === 'personal') {
+        return this.personalMetrics
+      }
+      return {}
+    },
   },
   methods: {
-    handleCompare() {
-      // 初始化图表，必须在获取数据后
-      this.initChart()
+    // ======== 数据函数 Begin ========
+    getQuery() {
+      if (this.$route.query.active && this.$route.query.active !== '') {
+        this.activeTag = this.$route.query.active
+      }
+      if (this.$route.query.algorithm && this.$route.query.algorithm !== '') {
+        this.selectAlgorithm = this.$route.query.algorithm
+      }
+      if (this.$route.query.wave && this.$route.query.wave !== '') {
+        this.activeWave = this.$route.query.wave
+      }
     },
+    async getAlgorithms() {
+      this.algorithms = await Label.getAlgorithmLabels()
+    },
+    async getMetrics() {
+      this.allMetrics = await Metric.getMetricMeans()
+      this.personalMetrics = await Metric.getPersonalMetricMeans()
+    },
+    // ======== 数据函数 End ========
+
+    // ======== 视图函数 Begin ========
     initChart() {
+      if (this.groupCols.length) {
+        this.destoryChart()
+      }
       // 初始化个人收集状态直方图
       for (const oneGroup of this.groupColData) {
         const { metric } = oneGroup[0]
-        console.log(metric)
-        new GroupColumn(metric, {
+        const groupCol = new GroupColumn(metric, {
           data: oneGroup,
           groupField: 'algorithm',
           xField: metric,
@@ -293,9 +196,46 @@ export default {
           },
           height: 350,
           columnSize: 12,
-        }).render()
+        })
+        groupCol.render()
+        this.groupCols.push(groupCol)
       }
     },
+    destoryChart() {
+      for (const col of this.groupCols) {
+        col.destroy()
+      }
+      this.groupCols = []
+    },
+    // ======== 视图函数 End ========
+
+    // ======== 处理函数 Begin ========
+    handleCompare() {
+      // 组装图表数据
+      this.groupColData = []
+      for (const [metric, value] of Object.entries(this.metrics[this.selectAlgorithm][this.comWave])) {
+        const toPush = []
+        toPush.push({
+          algorithm: this.selectAlgorithm,
+          value,
+          metric,
+        })
+        toPush[0][metric] = Metric.metricNameMap[metric]
+
+        toPush.push({
+          algorithm: this.comAlgorithm,
+          value: this.metrics[this.comAlgorithm][this.comWave][metric],
+          metric,
+        })
+        toPush[1][metric] = Metric.metricNameMap[metric]
+
+        this.groupColData.push(toPush)
+      }
+
+      // 初始化图表，必须在获取数据后
+      this.initChart()
+    },
+    // ======== 处理函数 End ========
   },
 }
 </script>

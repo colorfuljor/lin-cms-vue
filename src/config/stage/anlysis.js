@@ -11,7 +11,7 @@ const anlysisRouter = {
     {
       title: '二级指标汇总',
       type: 'view',
-      name: 'Metric',
+      name: 'metric',
       route: '/anlysis/mertric',
       filePath: 'view/anlysis/metric.vue',
       inNav: true,

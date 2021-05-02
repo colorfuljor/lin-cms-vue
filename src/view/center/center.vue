@@ -13,7 +13,7 @@
                   <el-input
                     placeholder="请输入内容"
                     size="small"
-                    v-model="nickname"
+                    v-model="username"
                     suffix-icon="el-icon-edit"
                     ref="input"
                     @blur="blur"
@@ -146,7 +146,6 @@ export default {
     }
     return {
       username: null,
-      nickname: null,
       form: {
         old_password: '',
         new_password: '',
@@ -289,14 +288,14 @@ export default {
       })
     },
     async blur() {
-      if (this.nickname) {
+      if (this.username) {
         const { user } = this.$store.state
-        if (this.nickname !== user.nickname && this.nickname !== '佚名') {
+        if (this.username !== user.username && this.username !== '佚名') {
           this.$axios({
             method: 'put',
             url: '/cms/user',
             data: {
-              nickname: this.nickname,
+              username: this.username,
             },
             showBackend: true,
           })
@@ -313,15 +312,15 @@ export default {
             .then(res => {
               // eslint-disable-line
               this.setUserAndState(res)
-              this.nickname = res.nickname
+              this.username = res.username
             })
         }
       }
-      this.nicknameChanged = false
+      this.usernameChanged = false
     },
     init() {
       const { user } = this.$store.state
-      this.nickname = user && user.nickname ? user.nickname : '佚名'
+      this.username = user && user.username ? user.username : '佚名'
     },
     goToCenter() {
       this.$router.push('/center')

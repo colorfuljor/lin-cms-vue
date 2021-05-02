@@ -14,12 +14,12 @@
             </label>
           </div>
           <div class="text">
-            <div class="username" @click="changeNickname" v-if="!nicknameChanged">{{ nickname }}</div>
+            <div class="username" @click="changeusername" v-if="!usernameChanged">{{ username }}</div>
             <el-input
               placeholder="请输入内容"
               size="small"
               v-else
-              v-model="nickname"
+              v-model="username"
               ref="input"
               @blur="blur"
             ></el-input>
@@ -152,8 +152,7 @@ export default {
     return {
       username: null,
       dialogFormVisible: false,
-      nicknameChanged: false,
-      nickname: null,
+      usernameChanged: false,
       groupName: null,
       form: {
         old_password: '',
@@ -296,21 +295,21 @@ export default {
           })
       })
     },
-    changeNickname() {
-      this.nicknameChanged = true
+    changeusername() {
+      this.usernameChanged = true
       setTimeout(() => {
         this.$refs.input.focus()
       }, 200)
     },
     async blur() {
-      if (this.nickname) {
+      if (this.username) {
         const { user } = this.$store.state
-        if (this.nickname !== user.nickname && this.nickname !== '佚名') {
+        if (this.username !== user.username && this.username !== '佚名') {
           this.$axios({
             method: 'put',
             url: '/cms/user',
             data: {
-              nickname: this.nickname,
+              username: this.username,
             },
             showBackend: true,
           })
@@ -327,17 +326,17 @@ export default {
             .then(res => {
               // eslint-disable-line
               this.setUserAndState(res)
-              this.nickname = res.nickname
+              this.username = res.username
             })
         }
       }
-      this.nicknameChanged = false
+      this.usernameChanged = false
     },
     init() {
       const { user } = this.$store.state
       this.username = user ? user.username : '未登录'
       this.groupName = user.groupName ? user.groupName : '超级管理员'
-      this.nickname = user && user.nickname ? user.nickname : '佚名'
+      this.username = user && user.username ? user.username : '佚名'
     },
     goToCenter() {
       this.$router.push('/center')
