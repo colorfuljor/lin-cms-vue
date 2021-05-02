@@ -1,7 +1,14 @@
 <template>
   <div class="container">
     <div class="option">
-      <el-radio-group v-model="activeTag">
+      <el-radio-group
+        v-model="activeTag"
+        @change="
+          comAlgorithm = ''
+          comWave = ''
+          destoryChart()
+        "
+      >
         <el-radio-button label="all">全部</el-radio-button>
         <el-radio-button label="personal">个人</el-radio-button>
       </el-radio-group>
