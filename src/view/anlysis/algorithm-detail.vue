@@ -4,6 +4,7 @@
       <el-radio-group
         v-model="activeTag"
         @change="
+          selectAlgorithm = ''
           comAlgorithm = ''
           comWave = ''
           destoryChart()
@@ -223,22 +224,24 @@ export default {
       // 组装图表数据
       this.groupColData = []
       for (const [metric, value] of Object.entries(this.metrics[this.selectAlgorithm][this.comWave])) {
-        const toPush = []
-        toPush.push({
-          algorithm: this.selectAlgorithm,
-          value,
-          metric,
-        })
-        toPush[0][metric] = Metric.metricNameMap[metric]
+        if (metric !== 'Sum' && metric !== 'wave' && metric !== 'algorithm' && metric !== 'collector') {
+          const toPush = []
+          toPush.push({
+            algorithm: this.selectAlgorithm,
+            value,
+            metric,
+          })
+          toPush[0][metric] = Metric.metricNameMap[metric]
 
-        toPush.push({
-          algorithm: this.comAlgorithm,
-          value: this.metrics[this.comAlgorithm][this.comWave][metric],
-          metric,
-        })
-        toPush[1][metric] = Metric.metricNameMap[metric]
+          toPush.push({
+            algorithm: this.comAlgorithm,
+            value: this.metrics[this.comAlgorithm][this.comWave][metric],
+            metric,
+          })
+          toPush[1][metric] = Metric.metricNameMap[metric]
 
-        this.groupColData.push(toPush)
+          this.groupColData.push(toPush)
+        }
       }
 
       // 初始化图表，必须在获取数据后
