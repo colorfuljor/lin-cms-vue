@@ -27,7 +27,7 @@
             </el-table-column>
             <el-table-column prop="slaSatisfaction" label="SLA满足度" sortable>
               <template slot-scope="scope">
-                {{ scope.row.sla }}%
+                {{ scope.row.slaSatisfaction }}%
               </template>
             </el-table-column>
             <el-table-column prop="collector" label="收集者"></el-table-column>

@@ -178,8 +178,10 @@ export default {
       this.algorithms = await Label.getAlgorithmLabels()
     },
     async getMetrics() {
+      const { user } = this.$store.state
+
       this.allMetrics = await Metric.getMetricMeans()
-      this.personalMetrics = await Metric.getPersonalMetricMeans()
+      this.personalMetrics = await Metric.getPersonalMetricMeans(user.username)
     },
     // ======== 数据函数 End ========
 
