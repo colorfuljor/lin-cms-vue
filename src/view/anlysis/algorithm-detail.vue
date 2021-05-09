@@ -38,37 +38,37 @@
               <el-col :span="4">
                 <div class="grid-content bg-purple">
                   <h2>稳定性</h2>
-                  <div class="metric-value">{{ metric.reliability }}%</div>
+                  <div class="metric-value">{{ metric.reliability.toFixed(2) }}%</div>
                 </div>
               </el-col>
               <el-col :span="4">
                 <div class="grid-content bg-purple">
                   <h2>可用性</h2>
-                  <div class="metric-value">{{ metric.availability }}%</div>
+                  <div class="metric-value">{{ metric.availability.toFixed(2) }}%</div>
                 </div>
               </el-col>
               <el-col :span="4">
                 <div class="grid-content bg-purple">
                   <h2>服务稳定性</h2>
-                  <div class="metric-value">{{ metric.stability }}</div>
+                  <div class="metric-value">{{ metric.stability.toFixed(5) }}</div>
                 </div>
               </el-col>
               <el-col :span="4">
                 <div class="grid-content bg-purple">
                   <h2>平均容器数</h2>
-                  <div class="metric-value">{{ metric.meanPod }}</div>
+                  <div class="metric-value">{{ metric.meanPod.toFixed(2) }}</div>
                 </div>
               </el-col>
               <el-col :span="4">
                 <div class="grid-content bg-purple">
                   <h2>弹性</h2>
-                  <div class="metric-value">{{ metric.elasticity }}%</div>
+                  <div class="metric-value">{{ metric.elasticity.toFixed(2) }}%</div>
                 </div>
               </el-col>
               <el-col :span="4">
                 <div class="grid-content bg-purple">
                   <h2>SLA满足度</h2>
-                  <div class="metric-value">{{ metric.slaSatisfaction }}%</div>
+                  <div class="metric-value">{{ metric.slaSatisfaction.toFixed(2) }}%</div>
                 </div>
               </el-col>
             </el-row>

@@ -289,6 +289,7 @@ export default {
       const { user } = this.$store.state
       const collectNums = {}
       this.totalNum = this.collectList.length
+      this.personNum = 0
       for (const oneCollect of this.collectList) {
         if (!collectNums.hasOwnProperty(oneCollect.algorithmType)) {
           collectNums[oneCollect.algorithmType] = {}
